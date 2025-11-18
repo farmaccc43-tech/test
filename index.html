@@ -1,46 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>3D Map - Cesium OSM</title>
+    <meta charset="UTF-8">
+    <title>3D School Explorer - FPS Mode</title>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Cesium.js"></script>
-    <link href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
         html, body, #cesiumContainer {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
+            width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        }
+        #info {
+            position: absolute;
+            top: 10px; left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px; border-radius: 6px;
+            z-index: 99;
+            font-family: Arial, sans-serif;
         }
     </style>
 </head>
-
 <body>
-    <div id="cesiumContainer"></div>
+<div id="cesiumContainer"></div>
+<div id="info">
+    <b>3D School Explorer - FPS</b><br>
+    W/A/S/D để đi, chuột để nhìn quanh
+</div>
 
-    <script>
-        // Khởi tạo Cesium
-        window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/";
-        
-        const viewer = new Cesium.Viewer("cesiumContainer", {
-            animation: false,
-            timeline: false,
-            baseLayerPicker: false,
-            terrain: Cesium.Terrain.fromWorldTerrain(),
-        });
+<script>
+    // Khởi tạo viewer
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: Cesium.createWorldTerrain(),
+        timeline: false,
+        animation: false,
+        baseLayerPicker: false,
+        geocoder: false,
+        homeButton: false,
+        sceneModePicker: false,
+        navigationHelpButton: false
+    });
 
-        // Bật nhà 3D miễn phí từ OpenStreetMap
-        viewer.scene.primitives.add(
-            await Cesium.createOsmBuildingsAsync()
-        );
+    // Load nhà 3D OSM
+    Cesium.createOsmBuildingsAsync().then(function(buildings) {
+        viewer.scene.primitives.add(buildings);
+    });
 
-        // Zoom tới vị trí trường của bạn
-        viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(105.8342, 21.0278, 500),
-            duration: 3
-        });
-    </script>
+    // Fly tới vị trí trường (thay bằng tọa độ trường bạn)
+    viewer.camera.flyTo({
+        Cesium.Cartesian3.fromDegrees(108.23742, 16.05837, cao)
+, // lng, lat, cao (m)
+        duration: 3
+    });
+
+    // FPS controls
+    const camera = viewer.camera;
+    const scene = viewer.scene;
+    const speed = 50; // tốc độ di chuyển (m/s)
+    const keys = {};
+
+    // Ghi nhận nhấn phím
+    window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+    // Mouse look
+    let isMouseDown = false;
+    let lastMouseX, lastMouseY;
+
+    viewer.canvas.addEventListener('mousedown', (e) => {
+        isMouseDown = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isMouseDown = false; });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+
+        camera.rotateRight(-dx * 0.002);
+        camera.rotateUp(-dy * 0.002);
+    });
+
+    // Update camera mỗi frame
+    viewer.clock.onTick.addEventListener(() => {
+        const direction = new Cesium.Cartesian3();
+
+        if (keys['w']) {
+            Cesium.Cartesian3.add(direction, camera.direction, direction);
+        }
+        if (keys['s']) {
+            Cesium.Cartesian3.subtract(direction, camera.direction, direction);
+        }
+        if (keys['a']) {
+            Cesium.Cartesian3.subtract(direction, camera.right, direction);
+        }
+        if (keys['d']) {
+            Cesium.Cartesian3.add(direction, camera.right, direction);
+        }
+
+        Cesium.Cartesian3.multiplyByScalar(direction, speed * viewer.clock.deltaTime, direction);
+        camera.move(direction);
+    });
+</script>
 </body>
 </html>
+
 
