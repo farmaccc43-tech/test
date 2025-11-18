@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>GPS Map Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- Locate Control -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.78.0/L.Control.Locate.min.css" />
+
+  <style>
+    body, html {
+      margin: 0;
+      height: 100%;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Locate Control JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.78.0/L.Control.Locate.min.js"></script>
+
+  <script>
+    // Khởi tạo map
+    var map = L.map('map', {
+      center: [21.0278, 105.8342], // vị trí mặc định (Hà Nội)
+      zoom: 17,
+      zoomControl: true
+    });
+
+    // Layer bản đồ miễn phí (OpenStreetMap)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 20,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Nút GPS tự động lấy vị trí thật
+    L.control.locate({
+      position: 'topleft',
+      strings: {
+        title: "Xác định vị trí hiện tại của tôi"
+      }
+    }).addTo(map);
+  </script>
+</body>
+</html>
