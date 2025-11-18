@@ -1,58 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>GPS Map Demo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-  <!-- Locate Control -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.78.0/L.Control.Locate.min.css" />
-
-  <style>
-    body, html {
-      margin: 0;
-      height: 100%;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <title>3D Map - Cesium OSM</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 
 <body>
-  <div id="map"></div>
+    <div id="cesiumContainer"></div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Khởi tạo Cesium
+        window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/";
+        
+        const viewer = new Cesium.Viewer("cesiumContainer", {
+            animation: false,
+            timeline: false,
+            baseLayerPicker: false,
+            terrain: Cesium.Terrain.fromWorldTerrain(),
+        });
 
-  <!-- Locate Control JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.78.0/L.Control.Locate.min.js"></script>
+        // Bật nhà 3D miễn phí từ OpenStreetMap
+        viewer.scene.primitives.add(
+            await Cesium.createOsmBuildingsAsync()
+        );
 
-  <script>
-    // Khởi tạo map
-    var map = L.map('map', {
-      center: [21.0278, 105.8342], // vị trí mặc định (Hà Nội)
-      zoom: 17,
-      zoomControl: true
-    });
-
-    // Layer bản đồ miễn phí (OpenStreetMap)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 20,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    // Nút GPS tự động lấy vị trí thật
-    L.control.locate({
-      position: 'topleft',
-      strings: {
-        title: "Xác định vị trí hiện tại của tôi"
-      }
-    }).addTo(map);
-  </script>
+        // Zoom tới vị trí trường của bạn
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(105.8342, 21.0278, 500),
+            duration: 3
+        });
+    </script>
 </body>
 </html>
+
